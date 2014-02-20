@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;
 import org.apache.hadoop.hbase.io.hfile.Compression;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
@@ -73,9 +74,10 @@ public class TableCreator {
       HBaseAdmin admin = new HBaseAdmin(config);
       HColumnDescriptor cf = new HColumnDescriptor(colFamily);
       cf.setCompressionType(Compression.Algorithm.SNAPPY);
+      cf.setDataBlockEncoding(DataBlockEncoding.FAST_DIFF);
       cf.setMaxVersions(1);
       HTableDescriptor ror = new HTableDescriptor(tableName);
-      if (regionSize != null && regionSize > 0) ror.setMaxFileSize(regionSize * 1024l * 1000);
+      if (regionSize != null && regionSize > 0) ror.setMaxFileSize(regionSize * 1048576); // 1 MB = 2^20 bytes
       ror.addFamily(cf);
       if (byteSplits == null) {
         admin.createTable(ror);
