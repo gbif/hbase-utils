@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>hbase-utils</artifactId>
-  <version>0.6-SNAPSHOT</version>
+  <version>0.6</version>
 
   <name>GBIF Common :: HBase Utils</name>
 
@@ -25,6 +25,7 @@
     <connection>scm:git:git@github.com:gbif/${project.artifactId}.git</connection>
     <url>https://github.com/gbif/${project.artifactId}</url>
     <developerConnection>scm:git:git@github.com:gbif/${project.artifactId}.git</developerConnection>
+    <tag>hbase-utils-0.6</tag>
   </scm>
 
   <build>
