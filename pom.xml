@@ -14,8 +14,8 @@
 
   <properties>
     <hbase.version>0.94.2-cdh4.2.1</hbase.version>
-    <hadoop.version>2.0.0-cdh4.2.1</hadoop.version>
-    <hadoopMR.version>2.0.0-mr1-cdh4.2.1</hadoopMR.version>
+    <hadoop-non-core.version>2.0.0-cdh4.2.1</hadoop-non-core.version>
+    <hadoop-core.version>2.0.0-mr1-cdh4.2.1</hadoop-core.version>
     <junit.version>4.10</junit.version>
     <mysql-connector.version>5.1.21</mysql-connector.version>
     <slf4j.version>1.7.2</slf4j.version>
@@ -29,6 +29,12 @@
   </scm>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -78,12 +84,12 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
-      <version>${hadoopMR.version}</version>
+      <version>${hadoop-core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
+      <version>${hadoop-non-core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -96,5 +102,47 @@
       <version>${slf4j.version}</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <!-- cluster -->
+        <zookeeper.quorum>c1n10.gbif.org:2181,c1n9.gbif.org:2181,c1n8.gbif.org:2181</zookeeper.quorum>
+        <hadoop.jobtracker>c1n10.gbif.org:8021</hadoop.jobtracker>
+        <hdfs.namenode>hdfs://c1n8.gbif.org:8020</hdfs.namenode>
+        <oozie.url>http://c1n8.gbif.org:11000/oozie</oozie.url>
+        <hive.metastore.uris>thrift://c1n8.gbif.org:9083</hive.metastore.uris>
+
+        <!-- cluster version -->
+        <hadoop-core.version>2.0.0-mr1-cdh4.2.1</hadoop-core.version>
+        <hadoop-non-core.version>2.0.0-cdh4.2.1</hadoop-non-core.version>
+        <hbase.version>0.94.2-cdh4.2.1</hbase.version>
+        <hive.version>0.10.0-cdh4.2.1</hive.version>
+        <oozie.version>3.3.0-cdh4.2.0</oozie.version>
+        <zookeeper.version>3.4.5-cdh4.2.1</zookeeper.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>dev</id>
+      <properties>
+        <!-- cluster -->
+        <zookeeper.quorum>c1n1.gbif.org:2181,c1n2.gbif.org:2181,c1n3.gbif.org:2181</zookeeper.quorum>
+        <hadoop.jobtracker>c1n3.gbif.org:8021</hadoop.jobtracker>
+        <hdfs.namenode>hdfs://c1n1.gbif.org:8020</hdfs.namenode>
+        <oozie.url>http://c1n1.gbif.org:11000/oozie</oozie.url>
+        <hive.metastore.uris>thrift://c1n1.gbif.org:9083</hive.metastore.uris>
+
+        <!-- cluster version -->
+        <hadoop-core.version>2.0.0-mr1-cdh4.6.0</hadoop-core.version>
+        <hadoop-non-core.version>2.0.0-cdh4.6.0</hadoop-non-core.version>
+        <hbase.version>0.94.15-cdh4.6.0</hbase.version>
+        <hive.version>0.10.0-cdh4.6.0</hive.version>
+        <oozie.version>3.3.2-cdh4.6.0</oozie.version>
+        <zookeeper.version>3.4.5-cdh4.6.0</zookeeper.version>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>
