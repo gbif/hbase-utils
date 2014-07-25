@@ -1,7 +1,10 @@
 hbase-utils
 ===========
 
-Some utilities for interacting with HBase, primary among them the TableCreator to build pre-split occurrence tables.
+Some utilities for interacting with HBase, primary among them the TableCreator and TableCloneCreator to build pre-split
+occurrence tables.
+
+When building with mvn make sure to specify prod or dev as the profile so that you point to the right cluster.
 
 
 Acknowledgements
