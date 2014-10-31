@@ -11,6 +11,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.ServerName;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.MetaScanner;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
@@ -33,8 +34,9 @@ public class HBaseSplitCounter {
       writer = new OutputStreamWriter(fos, "UTF-8");
 
       Configuration config = HBaseConfiguration.create();
+      TableName tableNameBytes = TableName.valueOf(tableName);
       NavigableMap<HRegionInfo, ServerName> regions =
-        MetaScanner.allTableRegions(config, Bytes.toBytes(tableName), false);
+        MetaScanner.allTableRegions(config, null, tableNameBytes, false);
       int goodSplits = 0;
       for (HRegionInfo region : regions.keySet()) {
         byte[] endKey = region.getEndKey();

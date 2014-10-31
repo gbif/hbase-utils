@@ -92,11 +92,6 @@
       <version>${hadoop-non-core.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase</artifactId>
-      <version>${hbase.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
@@ -122,6 +117,14 @@
         <oozie.version>3.3.0-cdh4.2.0</oozie.version>
         <zookeeper.version>3.4.5-cdh4.2.1</zookeeper.version>
       </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase</artifactId>
+          <version>${hbase.version}</version>
+        </dependency>
+      </dependencies>
     </profile>
 
     <profile>
@@ -135,13 +138,32 @@
         <hive.metastore.uris>thrift://c1n1.gbif.org:9083</hive.metastore.uris>
 
         <!-- cluster version -->
-        <hadoop-core.version>2.0.0-mr1-cdh4.6.0</hadoop-core.version>
-        <hadoop-non-core.version>2.0.0-cdh4.6.0</hadoop-non-core.version>
-        <hbase.version>0.94.15-cdh4.6.0</hbase.version>
-        <hive.version>0.10.0-cdh4.6.0</hive.version>
-        <oozie.version>3.3.2-cdh4.6.0</oozie.version>
-        <zookeeper.version>3.4.5-cdh4.6.0</zookeeper.version>
+        <hadoop-core.version>2.5.0-mr1-cdh5.2.0</hadoop-core.version>
+        <hadoop-non-core.version>2.5.0-cdh5.2.0</hadoop-non-core.version>
+        <hbase.version>0.98.6-cdh5.2.0</hbase.version>
+        <hive.version>0.13.1-cdh5.2.0</hive.version>
+        <oozie.version>4.0.0-cdh5.2.0</oozie.version>
+        <zookeeper.version>3.4.5-cdh5.2.0</zookeeper.version>
       </properties>
+
+      <!-- new dependencies for cdh5 -->
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-common</artifactId>
+          <version>${hbase.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-client</artifactId>
+          <version>${hbase.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-testing-util</artifactId>
+          <version>${hbase.version}</version>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 
