@@ -166,11 +166,11 @@
       <id>prod</id>
       <properties>
         <!-- cluster -->
-        <zookeeper.quorum>c1n10.gbif.org:2181,c1n9.gbif.org:2181,c1n8.gbif.org:2181</zookeeper.quorum>
-        <hadoop.jobtracker>c1n10.gbif.org:8021</hadoop.jobtracker>
-        <hdfs.namenode>hdfs://c1n8.gbif.org:8020</hdfs.namenode>
-        <oozie.url>http://c1n8.gbif.org:11000/oozie</oozie.url>
-        <hive.metastore.uris>thrift://c1n8.gbif.org:9083</hive.metastore.uris>
+        <zookeeper.quorum>prodmaster3-vh.gbif.org:2181,prodmaster2-vh.gbif.org:2181,prodmaster1-vh.gbif.org:2181</zookeeper.quorum>
+        <hadoop.jobtracker>prodmaster3-vh.gbif.org:8021</hadoop.jobtracker>
+        <hdfs.namenode>hdfs://prodmaster1-vh.gbif.org:8020</hdfs.namenode>
+        <oozie.url>http://prodmaster1-vh.gbif.org:11000/oozie</oozie.url>
+        <hive.metastore.uris>thrift://prodmaster1-vh.gbif.org:9083</hive.metastore.uris>
 
         <!-- cluster version -->
         <hadoop.version>2.5.0-cdh5.2.0</hadoop.version>
