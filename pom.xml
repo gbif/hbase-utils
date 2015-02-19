@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>hbase-utils</artifactId>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.10-SNAPSHOT</version>
 
   <name>GBIF Common :: HBase Utils</name>
 
