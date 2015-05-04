@@ -13,11 +13,11 @@
   <name>GBIF Common :: HBase Utils</name>
 
   <properties>
-    <hadoop.version>2.5.0-cdh5.2.0</hadoop.version>
-    <hbase.version>0.98.6-cdh5.2.0</hbase.version>
-    <hive.version>0.13.1-cdh5.2.0</hive.version>
-    <oozie.version>4.0.0-cdh5.2.0</oozie.version>
-    <zookeeper.version>3.4.5-cdh5.2.0</zookeeper.version>
+    <hadoop.version>2.5.0-cdh5.3.3</hadoop.version>
+    <hbase.version>0.98.6-cdh5.3.3</hbase.version>
+    <hive.version>0.13.1-cdh5.3.3</hive.version>
+    <oozie.version>4.0.0-cdh5.3.3</oozie.version>
+    <zookeeper.version>3.4.5-cdh5.3.3</zookeeper.version>
 
     <junit.version>4.10</junit.version>
     <slf4j.version>1.7.7</slf4j.version>
@@ -60,7 +60,7 @@
     </repository>
     <repository>
       <id>cloudera</id>
-      <url>https://repository.cloudera.com/content/repositories/releases/</url>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
       <snapshots>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
