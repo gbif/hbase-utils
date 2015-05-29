@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.gbif</groupId>
     <artifactId>motherpom</artifactId>
-    <version>19</version>
+    <version>20</version>
   </parent>
 
   <artifactId>hbase-utils</artifactId>
@@ -173,11 +173,11 @@
         <hive.metastore.uris>thrift://prodmaster1-vh.gbif.org:9083</hive.metastore.uris>
 
         <!-- cluster version -->
-        <hadoop.version>2.5.0-cdh5.2.0</hadoop.version>
-        <hbase.version>0.98.6-cdh5.2.0</hbase.version>
-        <hive.version>0.13.1-cdh5.2.0</hive.version>
-        <oozie.version>4.0.0-cdh5.2.0</oozie.version>
-        <zookeeper.version>3.4.5-cdh5.2.0</zookeeper.version>
+        <hadoop.version>2.6.0-cdh5.4.2</hadoop.version>
+        <hbase.version>1.0.0-cdh5.4.2</hbase.version>
+        <hive.version>1.1.0-cdh5.4.2</hive.version>
+        <oozie.version>4.1.0-cdh5.4.2</oozie.version>
+        <zookeeper.version>3.4.5-cdh5.4.2</zookeeper.version>
       </properties>
     </profile>
 
