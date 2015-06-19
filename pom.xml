@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.gbif</groupId>
     <artifactId>motherpom</artifactId>
-    <version>20</version>
+    <version>23-SNAPSHOT</version>
   </parent>
 
   <artifactId>hbase-utils</artifactId>
@@ -13,6 +13,8 @@
   <name>GBIF Common :: HBase Utils</name>
 
   <properties>
+    <jdkLevel>1.7</jdkLevel>
+
     <hadoop.version>2.6.0-cdh5.4.2</hadoop.version>
     <hbase.version>1.0.0-cdh5.4.2</hbase.version>
     <hive.version>1.1.0-cdh5.4.2</hive.version>
@@ -39,13 +41,43 @@
     </resources>
     <plugins>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
         <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
+          <createDependencyReducedPom>true</createDependencyReducedPom>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+              </excludes>
+            </filter>
+          </filters>
         </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <finalName>${project.artifactId}</finalName>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
+      <!--<plugin>-->
+        <!--<artifactId>maven-assembly-plugin</artifactId>-->
+        <!--<configuration>-->
+          <!--<descriptorRefs>-->
+            <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+          <!--</descriptorRefs>-->
+        <!--</configuration>-->
+      <!--</plugin>-->
     </plugins>
   </build>
 
