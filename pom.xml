@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.gbif</groupId>
     <artifactId>motherpom</artifactId>
-    <version>23</version>
+    <version>24</version>
   </parent>
 
   <artifactId>hbase-utils</artifactId>
@@ -15,14 +15,15 @@
   <properties>
     <jdkLevel>1.7</jdkLevel>
 
-    <hadoop.version>2.6.0-cdh5.4.2</hadoop.version>
-    <hbase.version>1.0.0-cdh5.4.2</hbase.version>
-    <hive.version>1.1.0-cdh5.4.2</hive.version>
-    <oozie.version>4.1.0-cdh5.4.2</oozie.version>
-    <zookeeper.version>3.4.5-cdh5.4.2</zookeeper.version>
+    <hadoop.version>2.6.0-cdh5.4.7</hadoop.version>
+    <hbase.version>1.0.0-cdh5.4.7</hbase.version>
+    <hive.version>1.1.0-cdh5.4.7</hive.version>
+    <oozie.version>4.1.0-cdh5.4.7</oozie.version>
+    <zookeeper.version>3.4.5-cdh5.4.7</zookeeper.version>
 
-    <junit.version>4.10</junit.version>
+    <junit.version>4.11</junit.version>
     <slf4j.version>1.7.7</slf4j.version>
+    <maven-shade-plugin.version>2.3</maven-shade-plugin.version>
   </properties>
 
   <scm>
@@ -43,7 +44,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
+        <version>${maven-shade-plugin.version}</version>
         <configuration>
           <createDependencyReducedPom>true</createDependencyReducedPom>
           <filters>
@@ -70,14 +71,6 @@
           </execution>
         </executions>
       </plugin>
-      <!--<plugin>-->
-        <!--<artifactId>maven-assembly-plugin</artifactId>-->
-        <!--<configuration>-->
-          <!--<descriptorRefs>-->
-            <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
-          <!--</descriptorRefs>-->
-        <!--</configuration>-->
-      <!--</plugin>-->
     </plugins>
   </build>
 
@@ -192,45 +185,5 @@
       <version>${slf4j.version}</version>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <profile>
-      <id>prod</id>
-      <properties>
-        <!-- cluster -->
-        <zookeeper.quorum>prodmaster3-vh.gbif.org:2181,prodmaster2-vh.gbif.org:2181,prodmaster1-vh.gbif.org:2181</zookeeper.quorum>
-        <hadoop.jobtracker>prodmaster3-vh.gbif.org:8021</hadoop.jobtracker>
-        <hdfs.namenode>hdfs://prodmaster1-vh.gbif.org:8020</hdfs.namenode>
-        <oozie.url>http://prodmaster1-vh.gbif.org:11000/oozie</oozie.url>
-        <hive.metastore.uris>thrift://prodmaster1-vh.gbif.org:9083</hive.metastore.uris>
-
-        <!-- cluster version -->
-        <hadoop.version>2.6.0-cdh5.4.2</hadoop.version>
-        <hbase.version>1.0.0-cdh5.4.2</hbase.version>
-        <hive.version>1.1.0-cdh5.4.2</hive.version>
-        <oozie.version>4.1.0-cdh5.4.2</oozie.version>
-        <zookeeper.version>3.4.5-cdh5.4.2</zookeeper.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>dev</id>
-      <properties>
-        <!-- cluster -->
-        <zookeeper.quorum>c1n1.gbif.org:2181,c1n2.gbif.org:2181,c1n3.gbif.org:2181</zookeeper.quorum>
-        <hadoop.jobtracker>c1n3.gbif.org:8021</hadoop.jobtracker>
-        <hdfs.namenode>hdfs://c1n1.gbif.org:8020</hdfs.namenode>
-        <oozie.url>http://c1n1.gbif.org:11000/oozie</oozie.url>
-        <hive.metastore.uris>thrift://c1n1.gbif.org:9083</hive.metastore.uris>
-
-        <!-- cluster version -->
-        <hadoop.version>2.6.0-cdh5.4.2</hadoop.version>
-        <hbase.version>1.0.0-cdh5.4.2</hbase.version>
-        <hive.version>1.1.0-cdh5.4.2</hive.version>
-        <oozie.version>4.1.0-cdh5.4.2</oozie.version>
-        <zookeeper.version>3.4.5-cdh5.4.2</zookeeper.version>
-      </properties>
-    </profile>
-  </profiles>
 
 </project>
