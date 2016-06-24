@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package org.gbif.hbase.util;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.Arrays;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.List;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import org.apache.hadoop.hbase.KeyValue;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.apache.hadoop.hbase.client.Result;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import org.apache.hadoop.hbase.util.Bytes;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import org.junit.Before;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import org.junit.Test;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import static org.junit.Assert.assertEquals;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import static org.junit.Assert.assertTrue;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>public class ResultReaderTest {<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>  private static final String CF1_NAME = "1";<a name="line.18"></a>
+<span class="sourceLineNo">019</span>  private static final byte[] CF1 = Bytes.toBytes(CF1_NAME);<a name="line.19"></a>
+<span class="sourceLineNo">020</span>  private static final String CF2_NAME = "2";<a name="line.20"></a>
+<span class="sourceLineNo">021</span>  private static final byte[] CF2 = Bytes.toBytes(CF2_NAME);<a name="line.21"></a>
+<span class="sourceLineNo">022</span>  private static final String INT_COL_NAME = "a";<a name="line.22"></a>
+<span class="sourceLineNo">023</span>  private static final byte[] INT_COL = Bytes.toBytes(INT_COL_NAME);<a name="line.23"></a>
+<span class="sourceLineNo">024</span>  private static final String DOUBLE_COL_NAME = "b";<a name="line.24"></a>
+<span class="sourceLineNo">025</span>  private static final byte[] DOUBLE_COL = Bytes.toBytes(DOUBLE_COL_NAME);<a name="line.25"></a>
+<span class="sourceLineNo">026</span>  private static final String LONG_COL_NAME = "c";<a name="line.26"></a>
+<span class="sourceLineNo">027</span>  private static final byte[] LONG_COL = Bytes.toBytes(LONG_COL_NAME);<a name="line.27"></a>
+<span class="sourceLineNo">028</span>  private static final String STRING_COL_NAME = "d";<a name="line.28"></a>
+<span class="sourceLineNo">029</span>  private static final byte[] STRING_COL = Bytes.toBytes(STRING_COL_NAME);<a name="line.29"></a>
+<span class="sourceLineNo">030</span>  private static final String BYTES_COL_NAME = "e";<a name="line.30"></a>
+<span class="sourceLineNo">031</span>  private static final byte[] BYTES_COL = Bytes.toBytes(BYTES_COL_NAME);<a name="line.31"></a>
+<span class="sourceLineNo">032</span>  private static final byte[] KEY = Bytes.toBytes("12345");<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>  private static final int INT_VAL_1 = 1111;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>  private static final double DOUBLE_VAL_1 = 2.2222222222222222222d;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>  private static final long LONG_VAL_1 = 33333333333333l;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>  private static final String STRING_VAL_1 = "not numbers";<a name="line.37"></a>
+<span class="sourceLineNo">038</span>  private static final byte[] BYTES_VAL_1 = Bytes.toBytes("byte values");<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>  private static final int INT_VAL_2 = 4444;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>  private static final double DOUBLE_VAL_2 = 5.55555555555555d;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>  private static final long LONG_VAL_2 = 66666666666666666l;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>  private static final String STRING_VAL_2 = "just a string";<a name="line.43"></a>
+<span class="sourceLineNo">044</span>  private static final byte[] BYTES_VAL_2 = Bytes.toBytes("different byte values");<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>  private Result result = null;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>  @Before<a name="line.48"></a>
+<span class="sourceLineNo">049</span>  public void setup() {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>    List&lt;KeyValue&gt; kvs = new ArrayList&lt;KeyValue&gt;();<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>    // CF1<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    KeyValue kv = new KeyValue(KEY, CF1, INT_COL, Bytes.toBytes(INT_VAL_1));<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    kvs.add(kv);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    kv = new KeyValue(KEY, CF1, DOUBLE_COL, Bytes.toBytes(DOUBLE_VAL_1));<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    kvs.add(kv);<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    kv = new KeyValue(KEY, CF1, LONG_COL, Bytes.toBytes(LONG_VAL_1));<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    kvs.add(kv);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    kv = new KeyValue(KEY, CF1, STRING_COL, Bytes.toBytes(STRING_VAL_1));<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    kvs.add(kv);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    kv = new KeyValue(KEY, CF1, BYTES_COL, BYTES_VAL_1);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    kvs.add(kv);<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>    // CF2<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    kv = new KeyValue(KEY, CF2, INT_COL, Bytes.toBytes(INT_VAL_2));<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    kvs.add(kv);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    kv = new KeyValue(KEY, CF2, DOUBLE_COL, Bytes.toBytes(DOUBLE_VAL_2));<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    kvs.add(kv);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    kv = new KeyValue(KEY, CF2, LONG_COL, Bytes.toBytes(LONG_VAL_2));<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    kvs.add(kv);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    kv = new KeyValue(KEY, CF2, STRING_COL, Bytes.toBytes(STRING_VAL_2));<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    kvs.add(kv);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    kv = new KeyValue(KEY, CF2, BYTES_COL, BYTES_VAL_2);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    kvs.add(kv);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    result = new Result(kvs);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>  }<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>  @Test<a name="line.78"></a>
+<span class="sourceLineNo">079</span>  public void testString() {<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    String test = ResultReader.getString(result, CF1_NAME, STRING_COL_NAME, null);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    assertTrue(STRING_VAL_1.equals(test));<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>    test = ResultReader.getString(result, CF1_NAME, "fake col", "a default value");<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    assertTrue("a default value".equals(test));<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    test = ResultReader.getString(result, CF2_NAME, STRING_COL_NAME, null);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    assertTrue(STRING_VAL_2.equals(test));<a name="line.88"></a>
+<span class="sourceLineNo">089</span>  }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>  @Test<a name="line.91"></a>
+<span class="sourceLineNo">092</span>  public void testDouble() {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    Double test = ResultReader.getDouble(result, CF1_NAME, DOUBLE_COL_NAME, null);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    assertEquals(DOUBLE_VAL_1, test, 0.00001);<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>    test = ResultReader.getDouble(result, CF1_NAME, "fake col", 123456.789d);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    assertEquals(Double.valueOf(123456.789), test, 0.00001);<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>    test = ResultReader.getDouble(result, CF2_NAME, DOUBLE_COL_NAME, null);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    assertEquals(DOUBLE_VAL_2, test, 0.00001);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>  }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>  @Test<a name="line.103"></a>
+<span class="sourceLineNo">104</span>  public void testInteger() {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    Integer test = ResultReader.getInteger(result, CF1_NAME, INT_COL_NAME, null);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    assertEquals(INT_VAL_1, test.intValue());<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    test = ResultReader.getInteger(result, CF1_NAME, "fake col", 123456);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    assertEquals(Integer.valueOf(123456), test);<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    test = ResultReader.getInteger(result, CF2_NAME, INT_COL_NAME, null);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    assertEquals(INT_VAL_2, test.intValue());<a name="line.112"></a>
+<span class="sourceLineNo">113</span>  }<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>  @Test<a name="line.115"></a>
+<span class="sourceLineNo">116</span>  public void testLong() {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    Long test = ResultReader.getLong(result, CF1_NAME, LONG_COL_NAME, null);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    assertEquals(LONG_VAL_1, test.longValue());<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    test = ResultReader.getLong(result, CF1_NAME, "fake col", 1234567890l);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    assertEquals(Long.valueOf(1234567890l), test);<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    test = ResultReader.getLong(result, CF2_NAME, LONG_COL_NAME, null);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    assertEquals(LONG_VAL_2, test.longValue());<a name="line.124"></a>
+<span class="sourceLineNo">125</span>  }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>  @Test<a name="line.127"></a>
+<span class="sourceLineNo">128</span>  public void testBytes() {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    byte[] test = ResultReader.getBytes(result, CF1_NAME, BYTES_COL_NAME, null);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    assertTrue(Arrays.equals(BYTES_VAL_1, test));<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>    test = ResultReader.getBytes(result, CF1_NAME, "fake col", Bytes.toBytes(1234567890l));<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    assertTrue(Arrays.equals(Bytes.toBytes(1234567890l), test));<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>    test = ResultReader.getBytes(result, CF2_NAME, BYTES_COL_NAME, null);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    assertTrue(Arrays.equals(BYTES_VAL_2, test));<a name="line.136"></a>
+<span class="sourceLineNo">137</span>  }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>}<a name="line.138"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
