@@ -2,15 +2,14 @@ package org.gbif.hbase.util;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.TableDescriptorBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,25 +30,23 @@ public class TableCloneCreator {
       System.exit(1);
     }
 
-    createPresplitFromExisting(args[0], args[1]);
+    createPreSplitFromExisting(args[0], args[1]);
   }
 
-  private static void createPresplitFromExisting(String existingTableName, String newTable) throws IOException {
-    Configuration config = HBaseConfiguration.create();
-    HTable existingTable = new HTable(config, Bytes.toBytes(existingTableName));
-    Collection<HColumnDescriptor> existingColFams = existingTable.getTableDescriptor().getFamilies();
+  private static void createPreSplitFromExisting(String existingTableName, String newTable) throws IOException {
+    try (Connection connection = ConnectionFactory.createConnection(HBaseConfiguration.create());
+         Table existingTable = connection.getTable(TableName.valueOf(existingTableName));
+         Admin admin = connection.getAdmin()) {
 
-    HBaseAdmin admin = new HBaseAdmin(config);
-    HTableDescriptor tableDescriptor = new HTableDescriptor(newTable);
-    tableDescriptor.setMaxFileSize(existingTable.getTableDescriptor().getMaxFileSize());
-    for (HColumnDescriptor colFam : existingColFams) {
-      tableDescriptor.addFamily(colFam);
+      TableDescriptorBuilder tableDescriptor = TableDescriptorBuilder.newBuilder(TableName.valueOf(newTable))
+                                                .setMaxFileSize(existingTable.getDescriptor().getMaxFileSize());
+      tableDescriptor.setColumnFamilies(Arrays.asList(existingTable.getDescriptor().getColumnFamilies()));
+
+      byte[][] existingStartKeys = existingTable.getRegionLocator().getStartKeys();
+      // first key in getStartKeys will be empty
+      byte[][] splits = Arrays.copyOfRange(existingStartKeys, 1, existingStartKeys.length);
+
+      admin.createTable(tableDescriptor.build(), splits);
     }
-    byte[][] existingStartKeys = existingTable.getStartKeys();
-    // first key in getStartKeys will be empty
-    byte[][] splits = Arrays.copyOfRange(existingStartKeys, 1, existingStartKeys.length);
-
-    admin.createTable(tableDescriptor, splits);
-    admin.close();
   }
 }

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellBuilderFactory;
+import org.apache.hadoop.hbase.CellBuilderType;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Before;
@@ -45,34 +47,43 @@ public class ResultReaderTest {
 
   private Result result = null;
 
+  private static Cell newCell(byte[] row, byte[] columnFamily, byte[] qualifier, byte[] value) {
+    return CellBuilderFactory.create(CellBuilderType.SHALLOW_COPY)
+            .setRow(row)
+            .setFamily(columnFamily)
+            .setQualifier(qualifier)
+            .setValue(value)
+            .setType(Cell.Type.Put)
+            .build();
+  }
   @Before
   public void setup() {
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> cells = new ArrayList<>();
 
     // CF1
-    KeyValue kv = new KeyValue(KEY, CF1, INT_COL, Bytes.toBytes(INT_VAL_1));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF1, DOUBLE_COL, Bytes.toBytes(DOUBLE_VAL_1));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF1, LONG_COL, Bytes.toBytes(LONG_VAL_1));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF1, STRING_COL, Bytes.toBytes(STRING_VAL_1));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF1, BYTES_COL, BYTES_VAL_1);
-    kvs.add(kv);
+    Cell cell = newCell(KEY, CF1, INT_COL, Bytes.toBytes(INT_VAL_1));
+    cells.add(cell);
+    cell = newCell(KEY, CF1, DOUBLE_COL, Bytes.toBytes(DOUBLE_VAL_1));
+    cells.add(cell);
+    cell = newCell(KEY, CF1, LONG_COL, Bytes.toBytes(LONG_VAL_1));
+    cells.add(cell);
+    cell = newCell(KEY, CF1, STRING_COL, Bytes.toBytes(STRING_VAL_1));
+    cells.add(cell);
+    cell = newCell(KEY, CF1, BYTES_COL, BYTES_VAL_1);
+    cells.add(cell);
 
     // CF2
-    kv = new KeyValue(KEY, CF2, INT_COL, Bytes.toBytes(INT_VAL_2));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF2, DOUBLE_COL, Bytes.toBytes(DOUBLE_VAL_2));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF2, LONG_COL, Bytes.toBytes(LONG_VAL_2));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF2, STRING_COL, Bytes.toBytes(STRING_VAL_2));
-    kvs.add(kv);
-    kv = new KeyValue(KEY, CF2, BYTES_COL, BYTES_VAL_2);
-    kvs.add(kv);
-    result = new Result(kvs);
+    cell = newCell(KEY, CF2, INT_COL, Bytes.toBytes(INT_VAL_2));
+    cells.add(cell);
+    cell = newCell(KEY, CF2, DOUBLE_COL, Bytes.toBytes(DOUBLE_VAL_2));
+    cells.add(cell);
+    cell = newCell(KEY, CF2, LONG_COL, Bytes.toBytes(LONG_VAL_2));
+    cells.add(cell);
+    cell = newCell(KEY, CF2, STRING_COL, Bytes.toBytes(STRING_VAL_2));
+    cells.add(cell);
+    cell = newCell(KEY, CF2, BYTES_COL, BYTES_VAL_2);
+    cells.add(cell);
+    result = Result.create(cells);
   }
 
   @Test
@@ -94,7 +105,7 @@ public class ResultReaderTest {
     assertEquals(DOUBLE_VAL_1, test, 0.00001);
 
     test = ResultReader.getDouble(result, CF1_NAME, "fake col", 123456.789d);
-    assertEquals(Double.valueOf(123456.789), test, 0.00001);
+    assertEquals(123456.789, test, 0.00001);
 
     test = ResultReader.getDouble(result, CF2_NAME, DOUBLE_COL_NAME, null);
     assertEquals(DOUBLE_VAL_2, test, 0.00001);

@@ -1,6 +1,6 @@
 package org.gbif.hbase.util;
 
-import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -26,10 +26,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static String getString(Result row, String columnFamily, String columnName, String defaultValue) {
-    KeyValue raw = row.getColumnLatest(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    String result = (raw == null) ? defaultValue : Bytes.toString(raw.getValue());
-
-    return result;
+    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return  (raw == null) ? defaultValue : Bytes.toString(raw.getValueArray());
   }
 
   /**
@@ -43,10 +41,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Integer getInteger(Result row, String columnFamily, String columnName, Integer defaultValue) {
-    KeyValue raw = row.getColumnLatest(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    Integer result = (raw == null) ? defaultValue : Integer.valueOf(Bytes.toInt(raw.getValue()));
-
-    return result;
+    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Integer.valueOf(Bytes.toInt(raw.getValueArray()));
   }
 
   /**
@@ -60,10 +56,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Long getLong(Result row, String columnFamily, String columnName, Long defaultValue) {
-    KeyValue raw = row.getColumnLatest(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    Long result = (raw == null) ? defaultValue : Long.valueOf(Bytes.toLong(raw.getValue()));
-
-    return result;
+    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Long.valueOf(Bytes.toLong(raw.getValueArray()));
   }
 
   /**
@@ -77,11 +71,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Float getFloat(Result row, String columnFamily, String columnName, Float defaultValue) {
-    KeyValue raw = row.getColumnLatest(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    Float result = (raw == null) ? defaultValue : Float.valueOf(Bytes.toFloat(raw.getValue()));
-
-    return result;
-  }
+    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Float.valueOf(Bytes.toFloat(raw.getValueArray()));  }
 
   /**
    * Read the value of this cell and interpret as Double.
@@ -94,10 +85,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Double getDouble(Result row, String columnFamily, String columnName, Double defaultValue) {
-    KeyValue raw = row.getColumnLatest(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    Double result = (raw == null) ? defaultValue : Double.valueOf(Bytes.toDouble(raw.getValue()));
-
-    return result;
+    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Double.valueOf(Bytes.toDouble(raw.getValueArray()));
   }
 
   /**
@@ -111,15 +100,13 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static byte[] getBytes(Result row, String columnFamily, String columnName, byte[] defaultValue) {
-    KeyValue raw = row.getColumnLatest(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    byte[] result = (raw == null) ? defaultValue : raw.getValue();
-
-    return result;
+    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : raw.getValueArray();
   }
 
   // TODO: @nullable
   public static Long getTimestamp(Result row, String columnFamily, String columnName) {
-    KeyValue raw = row.getColumnLatest(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
     return (raw == null) ? null : raw.getTimestamp();
   }
 }

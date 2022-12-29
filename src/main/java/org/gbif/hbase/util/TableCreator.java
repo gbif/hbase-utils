@@ -7,23 +7,23 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.MasterNotRunningException;
-import org.apache.hadoop.hbase.ZooKeeperConnectionException;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.ColumnFamilyDescriptor;
+import org.apache.hadoop.hbase.client.ColumnFamilyDescriptorBuilder;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.TableDescriptorBuilder;
 import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-//import org.apache.hadoop.hbase.io.hfile.Compression;
 
 public class TableCreator {
 
@@ -71,29 +71,28 @@ public class TableCreator {
     }
 
     log.info("Creating table");
-    Configuration config = HBaseConfiguration.create();
-    try {
-      HBaseAdmin admin = new HBaseAdmin(config);
-      HColumnDescriptor cf = new HColumnDescriptor(colFamily);
-      cf.setCompressionType(Compression.Algorithm.SNAPPY);
-      cf.setDataBlockEncoding(DataBlockEncoding.FAST_DIFF);
-      cf.setMaxVersions(1);
-      HTableDescriptor ror = new HTableDescriptor(tableName);
-      if (regionSize != null && regionSize > 0) ror.setMaxFileSize(regionSize * 1048576); // 1 MB = 2^20 bytes
-      ror.addFamily(cf);
+    try (Connection connection = ConnectionFactory.createConnection(HBaseConfiguration.create());
+         Admin admin = connection.getAdmin()) {
+
+      ColumnFamilyDescriptor cf = ColumnFamilyDescriptorBuilder
+        .newBuilder(colFamily.getBytes(StandardCharsets.UTF_8))
+        .setCompressionType(Compression.Algorithm.SNAPPY)
+        .setDataBlockEncoding(DataBlockEncoding.FAST_DIFF)
+        .setMaxVersions(1)
+        .build();
+      TableDescriptorBuilder ror = TableDescriptorBuilder
+        .newBuilder(TableName.valueOf(tableName))
+        .setColumnFamily(cf);
+
+      if (regionSize != null && regionSize > 0) {
+        ror.setMaxFileSize(regionSize * 1048576); // 1 MB = 2^20 bytes
+      }
+
       if (byteSplits == null) {
-        admin.createTable(ror);
+        admin.createTable(ror.build());
+      } else {
+        admin.createTable(ror.build(), byteSplits);
       }
-      else {
-        admin.createTable(ror, byteSplits);
-      }
-      admin.close();
-    } catch (MasterNotRunningException e) {
-      log.info("HBase exception", e);
-      System.exit(1);
-    } catch (ZooKeeperConnectionException e) {
-      log.info("HBase exception", e);
-      System.exit(1);
     } catch (IOException e) {
       log.info("HBase exception", e);
       System.exit(1);
