@@ -39,8 +39,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static String getString(Result row, String columnFamily, String columnName, String defaultValue) {
-    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    return  (raw == null) ? defaultValue : Bytes.toString(raw.getValueArray());
+    byte[] raw = row.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return  (raw == null) ? defaultValue : Bytes.toString(raw);
   }
 
   /**
@@ -54,8 +54,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Integer getInteger(Result row, String columnFamily, String columnName, Integer defaultValue) {
-    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    return (raw == null) ? defaultValue : Integer.valueOf(Bytes.toInt(raw.getValueArray()));
+    byte[] raw = row.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Integer.valueOf(Bytes.toInt(raw));
   }
 
   /**
@@ -69,8 +69,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Long getLong(Result row, String columnFamily, String columnName, Long defaultValue) {
-    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    return (raw == null) ? defaultValue : Long.valueOf(Bytes.toLong(raw.getValueArray()));
+    byte[] raw = row.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Long.valueOf(Bytes.toLong(raw));
   }
 
   /**
@@ -84,8 +84,9 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Float getFloat(Result row, String columnFamily, String columnName, Float defaultValue) {
-    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    return (raw == null) ? defaultValue : Float.valueOf(Bytes.toFloat(raw.getValueArray()));  }
+    byte[] raw = row.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Float.valueOf(Bytes.toFloat(raw));
+  }
 
   /**
    * Read the value of this cell and interpret as Double.
@@ -98,8 +99,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static Double getDouble(Result row, String columnFamily, String columnName, Double defaultValue) {
-    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    return (raw == null) ? defaultValue : Double.valueOf(Bytes.toDouble(raw.getValueArray()));
+    byte[] raw = row.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : Double.valueOf(Bytes.toDouble(raw));
   }
 
   /**
@@ -113,8 +114,8 @@ public class ResultReader {
    * @return the value from the specified column, or defaultValue if it's null/doesn't exist
    */
   public static byte[] getBytes(Result row, String columnFamily, String columnName, byte[] defaultValue) {
-    Cell raw = row.getColumnLatestCell(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
-    return (raw == null) ? defaultValue : raw.getValueArray();
+    byte[] raw = row.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(columnName));
+    return (raw == null) ? defaultValue : raw;
   }
 
   // TODO: @nullable
