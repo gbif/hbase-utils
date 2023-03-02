@@ -8,12 +8,12 @@
   </parent>
 
   <artifactId>hbase-utils</artifactId>
-  <version>0.13-hbase2-SNAPSHOT</version>
+  <version>0.14-SNAPSHOT</version>
 
   <name>GBIF Common :: HBase Utils</name>
 
   <properties>
-    <hadoop.version>3.3.0</hadoop.version>
+    <hadoop.version>3.2.4</hadoop.version>
     <hbase.version>2.4.12</hbase.version>
 
     <junit.version>4.13.1</junit.version>
@@ -45,12 +45,20 @@
 
   <repositories>
     <repository>
-      <id>gbif-all</id>
-      <url>https://repository.gbif.org/content/groups/gbif</url>
+      <id>gbif-central</id>
+      <url>https://repository.gbif.org/repository/central/</url>
+    </repository>
+    <repository>
+      <id>gbif-release</id>
+      <url>https://repository.gbif.org/repository/releases/</url>
+    </repository>
+    <repository>
+      <id>gbif-snapshot</id>
+      <url>https://repository.gbif.org/repository/snapshots/</url>
     </repository>
     <repository>
       <id>gbif-thirdparty</id>
-      <url>https://repository.gbif.org/content/repositories/thirdparty/</url>
+      <url>https://repository.gbif.org/repository/thirdparty/</url>
     </repository>
   </repositories>
 
@@ -100,33 +108,12 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-common</artifactId>
       <version>${hbase.version}</version>
-      <exclusions>
-        <!-- ignore MR1 artifacts -->
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
       <exclusions>
-        <!-- ignore MR1 artifacts -->
-        <exclusion>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-        </exclusion>
-        <!-- remove logging which we'll ship to logback -->
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
