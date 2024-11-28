@@ -1,129 +1,142 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html lang="en">
 <head>
 <title>Source code</title>
 <link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
 </head>
 <body>
+<main role="main">
 <div class="sourceContainer">
-<pre><span class="sourceLineNo">001</span>package org.gbif.hbase.util;<a name="line.1"></a>
-<span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span>import java.io.BufferedReader;<a name="line.3"></a>
-<span class="sourceLineNo">004</span>import java.io.File;<a name="line.4"></a>
-<span class="sourceLineNo">005</span>import java.io.FileInputStream;<a name="line.5"></a>
-<span class="sourceLineNo">006</span>import java.io.FileNotFoundException;<a name="line.6"></a>
-<span class="sourceLineNo">007</span>import java.io.IOException;<a name="line.7"></a>
-<span class="sourceLineNo">008</span>import java.io.InputStreamReader;<a name="line.8"></a>
-<span class="sourceLineNo">009</span>import java.io.UnsupportedEncodingException;<a name="line.9"></a>
-<span class="sourceLineNo">010</span>import java.util.ArrayList;<a name="line.10"></a>
-<span class="sourceLineNo">011</span>import java.util.List;<a name="line.11"></a>
-<span class="sourceLineNo">012</span><a name="line.12"></a>
-<span class="sourceLineNo">013</span>import org.apache.hadoop.conf.Configuration;<a name="line.13"></a>
-<span class="sourceLineNo">014</span>import org.apache.hadoop.hbase.HBaseConfiguration;<a name="line.14"></a>
-<span class="sourceLineNo">015</span>import org.apache.hadoop.hbase.HColumnDescriptor;<a name="line.15"></a>
-<span class="sourceLineNo">016</span>import org.apache.hadoop.hbase.HTableDescriptor;<a name="line.16"></a>
-<span class="sourceLineNo">017</span>import org.apache.hadoop.hbase.MasterNotRunningException;<a name="line.17"></a>
-<span class="sourceLineNo">018</span>import org.apache.hadoop.hbase.ZooKeeperConnectionException;<a name="line.18"></a>
-<span class="sourceLineNo">019</span>import org.apache.hadoop.hbase.client.HBaseAdmin;<a name="line.19"></a>
-<span class="sourceLineNo">020</span>import org.apache.hadoop.hbase.io.compress.Compression;<a name="line.20"></a>
-<span class="sourceLineNo">021</span>import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;<a name="line.21"></a>
-<span class="sourceLineNo">022</span>import org.apache.hadoop.hbase.util.Bytes;<a name="line.22"></a>
-<span class="sourceLineNo">023</span>import org.slf4j.Logger;<a name="line.23"></a>
-<span class="sourceLineNo">024</span>import org.slf4j.LoggerFactory;<a name="line.24"></a>
-<span class="sourceLineNo">025</span><a name="line.25"></a>
-<span class="sourceLineNo">026</span>//import org.apache.hadoop.hbase.io.hfile.Compression;<a name="line.26"></a>
-<span class="sourceLineNo">027</span><a name="line.27"></a>
-<span class="sourceLineNo">028</span>public class TableCreator {<a name="line.28"></a>
-<span class="sourceLineNo">029</span><a name="line.29"></a>
-<span class="sourceLineNo">030</span>  private static Logger log = LoggerFactory.getLogger(org.gbif.hbase.util.TableCreator.class);<a name="line.30"></a>
-<span class="sourceLineNo">031</span><a name="line.31"></a>
-<span class="sourceLineNo">032</span>  /**<a name="line.32"></a>
-<span class="sourceLineNo">033</span>   * Create an hbase table with given colfamily, using the given splits file to presplit the table.  Regions are set<a name="line.33"></a>
-<span class="sourceLineNo">034</span>   * to the given max regionSize (given in MB and translated into bytes). Input table<a name="line.34"></a>
-<span class="sourceLineNo">035</span>   *<a name="line.35"></a>
-<span class="sourceLineNo">036</span>   * @param tableName      table to create<a name="line.36"></a>
-<span class="sourceLineNo">037</span>   * @param colFamily      col family to create<a name="line.37"></a>
-<span class="sourceLineNo">038</span>   * @param splitsFileName one split per line, interpreted as ints<a name="line.38"></a>
-<span class="sourceLineNo">039</span>   * @param regionSize     max region file size in MB<a name="line.39"></a>
-<span class="sourceLineNo">040</span>   */<a name="line.40"></a>
-<span class="sourceLineNo">041</span>  private void createPreSplitTable(String tableName, String colFamily, String splitsFileName, Integer regionSize) {<a name="line.41"></a>
-<span class="sourceLineNo">042</span>    byte[][] byteSplits = null;<a name="line.42"></a>
-<span class="sourceLineNo">043</span><a name="line.43"></a>
-<span class="sourceLineNo">044</span>    if (splitsFileName != null) {<a name="line.44"></a>
-<span class="sourceLineNo">045</span>      // assumes splits are written as strings but are to be interpreted as ints<a name="line.45"></a>
-<span class="sourceLineNo">046</span>      log.info("Reading splits file [{}]", splitsFileName);<a name="line.46"></a>
-<span class="sourceLineNo">047</span>      List&lt;Integer&gt; splits = new ArrayList&lt;Integer&gt;();<a name="line.47"></a>
-<span class="sourceLineNo">048</span>      try {<a name="line.48"></a>
-<span class="sourceLineNo">049</span>        BufferedReader reader =<a name="line.49"></a>
-<span class="sourceLineNo">050</span>          new BufferedReader(new InputStreamReader(new FileInputStream(new File(splitsFileName)), "UTF-8"));<a name="line.50"></a>
-<span class="sourceLineNo">051</span>        while (reader.ready()) {<a name="line.51"></a>
-<span class="sourceLineNo">052</span>          String line = reader.readLine();<a name="line.52"></a>
-<span class="sourceLineNo">053</span>          splits.add(Integer.valueOf(line));<a name="line.53"></a>
-<span class="sourceLineNo">054</span>        }<a name="line.54"></a>
-<span class="sourceLineNo">055</span>      } catch (FileNotFoundException e) {<a name="line.55"></a>
-<span class="sourceLineNo">056</span>        log.warn("Splits file not found - exiting", e);<a name="line.56"></a>
-<span class="sourceLineNo">057</span>        System.exit(1);<a name="line.57"></a>
-<span class="sourceLineNo">058</span>      } catch (UnsupportedEncodingException e) {<a name="line.58"></a>
-<span class="sourceLineNo">059</span>        log.error("Drastic jvm failure - exiting", e);<a name="line.59"></a>
-<span class="sourceLineNo">060</span>        System.exit(1);<a name="line.60"></a>
-<span class="sourceLineNo">061</span>      } catch (IOException e) {<a name="line.61"></a>
-<span class="sourceLineNo">062</span>        log.warn("Failure reading splits file - exiting", e);<a name="line.62"></a>
-<span class="sourceLineNo">063</span>        System.exit(1);<a name="line.63"></a>
-<span class="sourceLineNo">064</span>      }<a name="line.64"></a>
-<span class="sourceLineNo">065</span>      log.info("Loaded [{}] splits", splits.size());<a name="line.65"></a>
-<span class="sourceLineNo">066</span><a name="line.66"></a>
-<span class="sourceLineNo">067</span>      byteSplits = new byte[splits.size()][];<a name="line.67"></a>
-<span class="sourceLineNo">068</span>      for (int i = 0; i &lt; splits.size(); i++) {<a name="line.68"></a>
-<span class="sourceLineNo">069</span>        byteSplits[i] = Bytes.toBytes(splits.get(i));<a name="line.69"></a>
-<span class="sourceLineNo">070</span>      }<a name="line.70"></a>
-<span class="sourceLineNo">071</span>    }<a name="line.71"></a>
-<span class="sourceLineNo">072</span><a name="line.72"></a>
-<span class="sourceLineNo">073</span>    log.info("Creating table");<a name="line.73"></a>
-<span class="sourceLineNo">074</span>    Configuration config = HBaseConfiguration.create();<a name="line.74"></a>
-<span class="sourceLineNo">075</span>    try {<a name="line.75"></a>
-<span class="sourceLineNo">076</span>      HBaseAdmin admin = new HBaseAdmin(config);<a name="line.76"></a>
-<span class="sourceLineNo">077</span>      HColumnDescriptor cf = new HColumnDescriptor(colFamily);<a name="line.77"></a>
-<span class="sourceLineNo">078</span>      cf.setCompressionType(Compression.Algorithm.SNAPPY);<a name="line.78"></a>
-<span class="sourceLineNo">079</span>      cf.setDataBlockEncoding(DataBlockEncoding.FAST_DIFF);<a name="line.79"></a>
-<span class="sourceLineNo">080</span>      cf.setMaxVersions(1);<a name="line.80"></a>
-<span class="sourceLineNo">081</span>      HTableDescriptor ror = new HTableDescriptor(tableName);<a name="line.81"></a>
-<span class="sourceLineNo">082</span>      if (regionSize != null &amp;&amp; regionSize &gt; 0) ror.setMaxFileSize(regionSize * 1048576); // 1 MB = 2^20 bytes<a name="line.82"></a>
-<span class="sourceLineNo">083</span>      ror.addFamily(cf);<a name="line.83"></a>
-<span class="sourceLineNo">084</span>      if (byteSplits == null) {<a name="line.84"></a>
-<span class="sourceLineNo">085</span>        admin.createTable(ror);<a name="line.85"></a>
-<span class="sourceLineNo">086</span>      }<a name="line.86"></a>
-<span class="sourceLineNo">087</span>      else {<a name="line.87"></a>
-<span class="sourceLineNo">088</span>        admin.createTable(ror, byteSplits);<a name="line.88"></a>
-<span class="sourceLineNo">089</span>      }<a name="line.89"></a>
-<span class="sourceLineNo">090</span>      admin.close();<a name="line.90"></a>
-<span class="sourceLineNo">091</span>    } catch (MasterNotRunningException e) {<a name="line.91"></a>
-<span class="sourceLineNo">092</span>      log.info("HBase exception", e);<a name="line.92"></a>
-<span class="sourceLineNo">093</span>      System.exit(1);<a name="line.93"></a>
-<span class="sourceLineNo">094</span>    } catch (ZooKeeperConnectionException e) {<a name="line.94"></a>
-<span class="sourceLineNo">095</span>      log.info("HBase exception", e);<a name="line.95"></a>
-<span class="sourceLineNo">096</span>      System.exit(1);<a name="line.96"></a>
-<span class="sourceLineNo">097</span>    } catch (IOException e) {<a name="line.97"></a>
-<span class="sourceLineNo">098</span>      log.info("HBase exception", e);<a name="line.98"></a>
-<span class="sourceLineNo">099</span>      System.exit(1);<a name="line.99"></a>
-<span class="sourceLineNo">100</span>    }<a name="line.100"></a>
-<span class="sourceLineNo">101</span>    log.info("Table created - exiting");<a name="line.101"></a>
-<span class="sourceLineNo">102</span>  }<a name="line.102"></a>
-<span class="sourceLineNo">103</span><a name="line.103"></a>
-<span class="sourceLineNo">104</span>  public static void main(String[] args) {<a name="line.104"></a>
-<span class="sourceLineNo">105</span>    if (args.length &lt; 2) {<a name="line.105"></a>
-<span class="sourceLineNo">106</span>      System.out.println("Usage: TableCreator &lt;table_name&gt; &lt;column_family&gt; [&lt;splits_file&gt;] [&lt;region_file_size_mb&gt;]");<a name="line.106"></a>
-<span class="sourceLineNo">107</span>      System.exit(1);<a name="line.107"></a>
-<span class="sourceLineNo">108</span>    }<a name="line.108"></a>
-<span class="sourceLineNo">109</span>    String tableName = args[0];<a name="line.109"></a>
-<span class="sourceLineNo">110</span>    String colFam = args[1];<a name="line.110"></a>
-<span class="sourceLineNo">111</span>    String splitsFile = args.length &gt; 2 ? args[2] : null;<a name="line.111"></a>
-<span class="sourceLineNo">112</span>    Integer regionSize = args.length == 4 ? Integer.valueOf(args[3]) : null;<a name="line.112"></a>
-<span class="sourceLineNo">113</span><a name="line.113"></a>
-<span class="sourceLineNo">114</span>    TableCreator instance = new TableCreator();<a name="line.114"></a>
-<span class="sourceLineNo">115</span>    //    instance.createPreSplitTable("ror_120", "v", "/Users/oliver/SourceCode/ror_120_splits.txt", 256*3);<a name="line.115"></a>
-<span class="sourceLineNo">116</span>    instance.createPreSplitTable(tableName, colFam, splitsFile, regionSize);<a name="line.116"></a>
-<span class="sourceLineNo">117</span>  }<a name="line.117"></a>
-<span class="sourceLineNo">118</span>}<a name="line.118"></a>
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Licensed under the Apache License, Version 2.0 (the "License");</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * you may not use this file except in compliance with the License.</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * You may obtain a copy of the License at</a>
+<span class="sourceLineNo">005</span><a id="line.5"> *</a>
+<span class="sourceLineNo">006</span><a id="line.6"> *     http://www.apache.org/licenses/LICENSE-2.0</a>
+<span class="sourceLineNo">007</span><a id="line.7"> *</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Unless required by applicable law or agreed to in writing, software</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * distributed under the License is distributed on an "AS IS" BASIS,</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * See the License for the specific language governing permissions and</a>
+<span class="sourceLineNo">012</span><a id="line.12"> * limitations under the License.</a>
+<span class="sourceLineNo">013</span><a id="line.13"> */</a>
+<span class="sourceLineNo">014</span><a id="line.14">package org.gbif.hbase.util;</a>
+<span class="sourceLineNo">015</span><a id="line.15"></a>
+<span class="sourceLineNo">016</span><a id="line.16">import java.io.BufferedReader;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import java.io.File;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import java.io.FileInputStream;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import java.io.FileNotFoundException;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import java.io.IOException;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import java.io.InputStreamReader;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import java.io.UnsupportedEncodingException;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import java.nio.charset.StandardCharsets;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import java.util.ArrayList;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import java.util.List;</a>
+<span class="sourceLineNo">026</span><a id="line.26"></a>
+<span class="sourceLineNo">027</span><a id="line.27">import org.apache.hadoop.hbase.HBaseConfiguration;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import org.apache.hadoop.hbase.TableName;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import org.apache.hadoop.hbase.client.Admin;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import org.apache.hadoop.hbase.client.ColumnFamilyDescriptor;</a>
+<span class="sourceLineNo">031</span><a id="line.31">import org.apache.hadoop.hbase.client.ColumnFamilyDescriptorBuilder;</a>
+<span class="sourceLineNo">032</span><a id="line.32">import org.apache.hadoop.hbase.client.Connection;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import org.apache.hadoop.hbase.client.ConnectionFactory;</a>
+<span class="sourceLineNo">034</span><a id="line.34">import org.apache.hadoop.hbase.client.TableDescriptorBuilder;</a>
+<span class="sourceLineNo">035</span><a id="line.35">import org.apache.hadoop.hbase.io.compress.Compression;</a>
+<span class="sourceLineNo">036</span><a id="line.36">import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;</a>
+<span class="sourceLineNo">037</span><a id="line.37">import org.apache.hadoop.hbase.util.Bytes;</a>
+<span class="sourceLineNo">038</span><a id="line.38">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">039</span><a id="line.39">import org.slf4j.LoggerFactory;</a>
+<span class="sourceLineNo">040</span><a id="line.40"></a>
+<span class="sourceLineNo">041</span><a id="line.41">public class TableCreator {</a>
+<span class="sourceLineNo">042</span><a id="line.42"></a>
+<span class="sourceLineNo">043</span><a id="line.43">  private static Logger log = LoggerFactory.getLogger(org.gbif.hbase.util.TableCreator.class);</a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45">  /**</a>
+<span class="sourceLineNo">046</span><a id="line.46">   * Create an hbase table with given colfamily, using the given splits file to presplit the table.  Regions are set</a>
+<span class="sourceLineNo">047</span><a id="line.47">   * to the given max regionSize (given in MB and translated into bytes). Input table</a>
+<span class="sourceLineNo">048</span><a id="line.48">   *</a>
+<span class="sourceLineNo">049</span><a id="line.49">   * @param tableName      table to create</a>
+<span class="sourceLineNo">050</span><a id="line.50">   * @param colFamily      col family to create</a>
+<span class="sourceLineNo">051</span><a id="line.51">   * @param splitsFileName one split per line, interpreted as ints</a>
+<span class="sourceLineNo">052</span><a id="line.52">   * @param regionSize     max region file size in MB</a>
+<span class="sourceLineNo">053</span><a id="line.53">   */</a>
+<span class="sourceLineNo">054</span><a id="line.54">  private void createPreSplitTable(String tableName, String colFamily, String splitsFileName, Integer regionSize) {</a>
+<span class="sourceLineNo">055</span><a id="line.55">    byte[][] byteSplits = null;</a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57">    if (splitsFileName != null) {</a>
+<span class="sourceLineNo">058</span><a id="line.58">      // assumes splits are written as strings but are to be interpreted as ints</a>
+<span class="sourceLineNo">059</span><a id="line.59">      log.info("Reading splits file [{}]", splitsFileName);</a>
+<span class="sourceLineNo">060</span><a id="line.60">      List&lt;Integer&gt; splits = new ArrayList&lt;Integer&gt;();</a>
+<span class="sourceLineNo">061</span><a id="line.61">      try {</a>
+<span class="sourceLineNo">062</span><a id="line.62">        BufferedReader reader =</a>
+<span class="sourceLineNo">063</span><a id="line.63">          new BufferedReader(new InputStreamReader(new FileInputStream(new File(splitsFileName)), "UTF-8"));</a>
+<span class="sourceLineNo">064</span><a id="line.64">        while (reader.ready()) {</a>
+<span class="sourceLineNo">065</span><a id="line.65">          String line = reader.readLine();</a>
+<span class="sourceLineNo">066</span><a id="line.66">          splits.add(Integer.valueOf(line));</a>
+<span class="sourceLineNo">067</span><a id="line.67">        }</a>
+<span class="sourceLineNo">068</span><a id="line.68">      } catch (FileNotFoundException e) {</a>
+<span class="sourceLineNo">069</span><a id="line.69">        log.warn("Splits file not found - exiting", e);</a>
+<span class="sourceLineNo">070</span><a id="line.70">        System.exit(1);</a>
+<span class="sourceLineNo">071</span><a id="line.71">      } catch (UnsupportedEncodingException e) {</a>
+<span class="sourceLineNo">072</span><a id="line.72">        log.error("Drastic jvm failure - exiting", e);</a>
+<span class="sourceLineNo">073</span><a id="line.73">        System.exit(1);</a>
+<span class="sourceLineNo">074</span><a id="line.74">      } catch (IOException e) {</a>
+<span class="sourceLineNo">075</span><a id="line.75">        log.warn("Failure reading splits file - exiting", e);</a>
+<span class="sourceLineNo">076</span><a id="line.76">        System.exit(1);</a>
+<span class="sourceLineNo">077</span><a id="line.77">      }</a>
+<span class="sourceLineNo">078</span><a id="line.78">      log.info("Loaded [{}] splits", splits.size());</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80">      byteSplits = new byte[splits.size()][];</a>
+<span class="sourceLineNo">081</span><a id="line.81">      for (int i = 0; i &lt; splits.size(); i++) {</a>
+<span class="sourceLineNo">082</span><a id="line.82">        byteSplits[i] = Bytes.toBytes(splits.get(i));</a>
+<span class="sourceLineNo">083</span><a id="line.83">      }</a>
+<span class="sourceLineNo">084</span><a id="line.84">    }</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">    log.info("Creating table");</a>
+<span class="sourceLineNo">087</span><a id="line.87">    try (Connection connection = ConnectionFactory.createConnection(HBaseConfiguration.create());</a>
+<span class="sourceLineNo">088</span><a id="line.88">         Admin admin = connection.getAdmin()) {</a>
+<span class="sourceLineNo">089</span><a id="line.89"></a>
+<span class="sourceLineNo">090</span><a id="line.90">      ColumnFamilyDescriptor cf = ColumnFamilyDescriptorBuilder</a>
+<span class="sourceLineNo">091</span><a id="line.91">        .newBuilder(colFamily.getBytes(StandardCharsets.UTF_8))</a>
+<span class="sourceLineNo">092</span><a id="line.92">        .setCompressionType(Compression.Algorithm.SNAPPY)</a>
+<span class="sourceLineNo">093</span><a id="line.93">        .setDataBlockEncoding(DataBlockEncoding.FAST_DIFF)</a>
+<span class="sourceLineNo">094</span><a id="line.94">        .setMaxVersions(1)</a>
+<span class="sourceLineNo">095</span><a id="line.95">        .build();</a>
+<span class="sourceLineNo">096</span><a id="line.96">      TableDescriptorBuilder ror = TableDescriptorBuilder</a>
+<span class="sourceLineNo">097</span><a id="line.97">        .newBuilder(TableName.valueOf(tableName))</a>
+<span class="sourceLineNo">098</span><a id="line.98">        .setColumnFamily(cf);</a>
+<span class="sourceLineNo">099</span><a id="line.99"></a>
+<span class="sourceLineNo">100</span><a id="line.100">      if (regionSize != null &amp;&amp; regionSize &gt; 0) {</a>
+<span class="sourceLineNo">101</span><a id="line.101">        ror.setMaxFileSize(regionSize * 1048576); // 1 MB = 2^20 bytes</a>
+<span class="sourceLineNo">102</span><a id="line.102">      }</a>
+<span class="sourceLineNo">103</span><a id="line.103"></a>
+<span class="sourceLineNo">104</span><a id="line.104">      if (byteSplits == null) {</a>
+<span class="sourceLineNo">105</span><a id="line.105">        admin.createTable(ror.build());</a>
+<span class="sourceLineNo">106</span><a id="line.106">      } else {</a>
+<span class="sourceLineNo">107</span><a id="line.107">        admin.createTable(ror.build(), byteSplits);</a>
+<span class="sourceLineNo">108</span><a id="line.108">      }</a>
+<span class="sourceLineNo">109</span><a id="line.109">    } catch (IOException e) {</a>
+<span class="sourceLineNo">110</span><a id="line.110">      log.info("HBase exception", e);</a>
+<span class="sourceLineNo">111</span><a id="line.111">      System.exit(1);</a>
+<span class="sourceLineNo">112</span><a id="line.112">    }</a>
+<span class="sourceLineNo">113</span><a id="line.113">    log.info("Table created - exiting");</a>
+<span class="sourceLineNo">114</span><a id="line.114">  }</a>
+<span class="sourceLineNo">115</span><a id="line.115"></a>
+<span class="sourceLineNo">116</span><a id="line.116">  public static void main(String[] args) {</a>
+<span class="sourceLineNo">117</span><a id="line.117">    if (args.length &lt; 2) {</a>
+<span class="sourceLineNo">118</span><a id="line.118">      System.out.println("Usage: TableCreator &lt;table_name&gt; &lt;column_family&gt; [&lt;splits_file&gt;] [&lt;region_file_size_mb&gt;]");</a>
+<span class="sourceLineNo">119</span><a id="line.119">      System.exit(1);</a>
+<span class="sourceLineNo">120</span><a id="line.120">    }</a>
+<span class="sourceLineNo">121</span><a id="line.121">    String tableName = args[0];</a>
+<span class="sourceLineNo">122</span><a id="line.122">    String colFam = args[1];</a>
+<span class="sourceLineNo">123</span><a id="line.123">    String splitsFile = args.length &gt; 2 ? args[2] : null;</a>
+<span class="sourceLineNo">124</span><a id="line.124">    Integer regionSize = args.length == 4 ? Integer.valueOf(args[3]) : null;</a>
+<span class="sourceLineNo">125</span><a id="line.125"></a>
+<span class="sourceLineNo">126</span><a id="line.126">    TableCreator instance = new TableCreator();</a>
+<span class="sourceLineNo">127</span><a id="line.127">    //    instance.createPreSplitTable("ror_120", "v", "/Users/oliver/SourceCode/ror_120_splits.txt", 256*3);</a>
+<span class="sourceLineNo">128</span><a id="line.128">    instance.createPreSplitTable(tableName, colFam, splitsFile, regionSize);</a>
+<span class="sourceLineNo">129</span><a id="line.129">  }</a>
+<span class="sourceLineNo">130</span><a id="line.130">}</a>
 
 
 
@@ -186,5 +199,6 @@
 
 </pre>
 </div>
+</main>
 </body>
 </html>

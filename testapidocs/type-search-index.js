@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"org.gbif.hbase.util","l":"ResultReaderTest"}]
